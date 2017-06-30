@@ -10,11 +10,14 @@ import org.apache.pdfbox.pdmodel.encryption.InvalidPasswordException;
 import org.apache.pdfbox.rendering.PDFRenderer;
 
 /**
- * Parses the frequency response graph from an Innerfidelity measurement PDF.
+ * Takes PDF files and Initializes Headphone objects,
+ * setting the headphone name,
+ * type (open-back, closed-back, or IEM),
+ * and images for frequency response graphs.
  * 
  * @author Adam Luck
  */
-public class GraphParser {
+public class PDFParser {
 
 	public static void main(String args[]) throws InvalidPasswordException, IOException {
 		File file = new File("C:\\Users\\Adam\\Downloads\\XiaomiPiston2.pdf");
