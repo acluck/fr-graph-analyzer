@@ -1,5 +1,8 @@
 package main;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -22,22 +25,19 @@ public class HeadphoneAnalyzer {
 
 	/** URL of Innerfidelity measurement PDFs. */
 	private static String measurementsLocation = "https://www.innerfidelity.com/headphone-measurements";
-	/**	List of earbuds. */
-	private HeadphoneList earbudList;
-	/**	List of earpad open headphones. */
-	private HeadphoneList earpadOpenList;
-	/**	List of earpad sealed headphones. */
-	private HeadphoneList earpadSealedList;
-	/**	List of full-size open headphones. */
-	private HeadphoneList fullSizeOpenList;
-	/**	List of full-size closed headphones. */
-	private HeadphoneList fullSizeSealedList;
-	/**	List of in-ear headphones. */
-	private HeadphoneList inEarList;
-	/**	List of noise-cancelling headphones. */
-	private HeadphoneList noiceCancellingList;
-	/**	List of wireless headphones. */
-	private HeadphoneList wirelessList;
+	/** Array containing the HeadphoneLists for each type of headphone */
+	private HeadphoneList[] headphones;
+	
+	/**
+	 * Constructs an array of empty HeadphoneLists.
+	 */
+	public HeadphoneAnalyzer() {
+		String[] types = Headphone.HEADPHONE_TYPES;
+		headphones = new HeadphoneList[types.length];
+		for (int i = 0; i < types.length; i++) {
+			headphones[i] = new HeadphoneList(types[i]);
+		}
+	}
 	
 	/**
 	 * Gets the measurement PDF and stores all of the headphone measurements.
@@ -48,9 +48,9 @@ public class HeadphoneAnalyzer {
 		
 		loadNewHeadphones();
 		
-		// TODO Use ImageParser to set values for all measured frequencies for each headphone.
-		
 		// TODO Use Analyzer to analyze user input and give headphone recommendations.
+		
+		saveNewHeadphones();
 	}
 
 	/**
@@ -88,6 +88,55 @@ public class HeadphoneAnalyzer {
 		} catch (InvalidDocumentException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		}
+		
+	}
+
+	/**
+	 * Saves all headphone measurements that don't already exist.
+	 */
+	private void saveNewHeadphones() {
+		for (HeadphoneList list : headphones) {
+			String type = list.getType();
+			for (Headphone headphone : list.getAll()) {
+				String name = headphone.getName();
+				String path = "./Headphones/" + type + "/" + name + "/" + name + ".txt";
+				File measurementFile = new File(path);
+				if (!measurementFile.exists()) {
+					saveHeadphone(headphone, path);
+				}
+			}
+		}
+	}
+
+	/**
+	 * Saves the measurement information of the given headphone in a text file.
+	 * @param headphone Headphone with measurements to save.
+	 * @param path Path of the file to save the information in.
+	 */
+	private void saveHeadphone(Headphone headphone, String path) {
+		BufferedWriter bw = null;
+		FileWriter fw = null;
+		try {
+			fw = new FileWriter(path);
+			bw = new BufferedWriter(fw);
+			bw.write(headphone.getName() + "\n");
+			double[] dBVals = headphone.getDBVals();
+			for (int i = 0; i < dBVals.length; i++) {
+				bw.write(Double.toString(dBVals[i]) + " ");
+			}
+			bw.write("\n");
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if (bw != null)
+					bw.close();
+				if (fw != null)
+					fw.close();
+			} catch (IOException ex) {
+				ex.printStackTrace();
+			}
 		}
 		
 	}

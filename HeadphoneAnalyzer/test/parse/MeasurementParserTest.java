@@ -1,5 +1,7 @@
 package parse;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.io.IOException;
 
 import org.apache.pdfbox.pdmodel.encryption.InvalidPasswordException;
@@ -22,20 +24,32 @@ public class MeasurementParserTest {
 	 */
 	@Test
 	public void test() throws InvalidPasswordException, IOException, InvalidDocumentException {
-		String path = "C:\\Users\\Adam\\Downloads\\AKGK7XX.pdf";
-		Headphone headphone = new Headphone("AKG K7XX", "Full-Size-Open");
+		String path = "C:\\Users\\Adam\\Downloads\\XiaomiPiston2.pdf";
+		Headphone headphone = new Headphone("Xiaomi Piston 2", "In-Ear");
 		MeasurementParser.parseMeasurements(path, headphone);
 		double[] dBVals = headphone.getDBVals();
-		for (int i = 0; i < dBVals.length; i++) {
-			System.out.println("" + Headphone.MEASURED_FREQUENCIES[i] + ": " +  dBVals[i]);
-		}
 		
-		path = "C:\\Users\\Adam\\Downloads\\StatusSMOB1.pdf";
-		headphone = new Headphone("Status SMOB1", "Full-Size-Open");
-		MeasurementParser.parseMeasurements(path, headphone);
-		dBVals = headphone.getDBVals();
-		for (int i = 0; i < dBVals.length; i++) {
-			System.out.println("" + Headphone.MEASURED_FREQUENCIES[i] + ": " +  dBVals[i]);
+		BufferedWriter bw = null;
+		FileWriter fw = null;
+		try {
+			fw = new FileWriter("./Headphones/In-Ear/" + headphone.getName() + "/" + headphone.getName() + ".txt");
+			bw = new BufferedWriter(fw);
+			bw.write(headphone.getName() + "\n");
+			for (int i = 0; i < dBVals.length; i++) {
+				bw.write(Double.toString(dBVals[i]) + " ");
+			}
+			bw.write("\n");
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if (bw != null)
+					bw.close();
+				if (fw != null)
+					fw.close();
+			} catch (IOException ex) {
+				ex.printStackTrace();
+			}
 		}
 	}
 

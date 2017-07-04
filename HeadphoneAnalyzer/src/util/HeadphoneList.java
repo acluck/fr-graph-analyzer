@@ -5,27 +5,39 @@ import java.util.Arrays;
 import data.Headphone;
 
 /**
- * Maintains a sorted list of all headphones that have been processed.
+ * Maintains a sorted list of all headphones of a certain type that have been processed.
  * 
  * @author Adam Luck
  */
 public class HeadphoneList {
 
+	/** Type of headphones contained in the list. */
+	private String type;
 	/** Array containing the headphones in the list. */
 	private Headphone[] list;
 	/** Initial list capacity. */
-	private final int INIT_SIZE = 1000;
+	private final int INIT_SIZE = 2;
 	/** Number of items in the list. */
 	private int size;
 	
 	/**
 	 * Constructor for the list.
+	 * @param type Type of headphones contained in the list.
 	 */
-	public HeadphoneList() {
+	public HeadphoneList(String type) {
+		this.type = type;
 		list = new Headphone[INIT_SIZE];
 		size = 0;
 	}
 	
+	/**
+	 * Returns the type of headphones contained in the list.
+	 * @return the type of headphones contained in the list.
+	 */
+	public String getType() {
+		return type;
+	}
+
 	/**
 	 * Adds a headphone to the list in sorted order.
 	 * @param headphone headphone to add to the list.
@@ -82,5 +94,13 @@ public class HeadphoneList {
 		}
 		// Return null if the headphone isn't in the list.
 		return null;
+	}
+	
+	/**
+	 * Returns the array of headphones represented by this list.
+	 * @return the array of headphones represented by this list.
+	 */
+	public Headphone[] getAll() {
+		return list;
 	}
 }

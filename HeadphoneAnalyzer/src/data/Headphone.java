@@ -14,9 +14,9 @@ public class Headphone implements Comparable<Headphone> {
 	/** Type of headphone. */
 	private String type;
 	/** Array of types of headphones. */
-	static final String[] HEADPHONE_TYPES = new String[] {
-			"Earbud", "Earpad-Open", "Earpad-Sealed", "Full-Size-Open",
-			"Full-Size-Sealed", "In-Ear", "Noise-Cancelling", "Wireless"
+	public static final String[] HEADPHONE_TYPES = new String[] {
+			"Earbud", "Earpad Open", "Earpad Sealed", "Full-Size Open",
+			"Full-Size Sealed", "In-Ear", "Noise-Cancelling", "Wireless"
 		};
 	/** Array of this headphone's decibel values at selected frequencies. */
 	private double[] dBVals;
@@ -50,7 +50,7 @@ public class Headphone implements Comparable<Headphone> {
 	}
 	
 	/**
-	 * Frequencies are found and set through ImageParser.
+	 * Frequencies are found and set in MeasurementParser.
 	 * @param dBVals Array of measured decibel values.
 	 */
 	public void setDBVals(double[] dBVals) {
@@ -59,7 +59,6 @@ public class Headphone implements Comparable<Headphone> {
 
 	/**
 	 * Returns the name of this headphone.
-	 * Used by HeadphoneAnalyzer.
 	 * @return the name of this headphone.
 	 */
 	public String getName() {
@@ -68,7 +67,6 @@ public class Headphone implements Comparable<Headphone> {
 
 	/**
 	 * Returns the type of this headphone.
-	 * Used by HeadphoneAnalyzer.
 	 * @return the type of this headphone.
 	 */
 	public String getType() {
@@ -77,7 +75,6 @@ public class Headphone implements Comparable<Headphone> {
 
 	/**
 	 * Returns this headphone's decibel values.
-	 * Used by HeadphoneAnalyzer.
 	 * @return this headphone's decibel values.
 	 */
 	public double[] getDBVals() {
