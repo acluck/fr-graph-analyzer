@@ -15,8 +15,8 @@ public class Headphone implements Comparable<Headphone> {
 	private String type;
 	/** Array of types of headphones. */
 	public static final String[] HEADPHONE_TYPES = new String[] {
-			"Earbud", "Earpad Open", "Earpad Sealed", "Full-Size Open",
-			"Full-Size Sealed", "In-Ear", "Noise-Cancelling", "Wireless"
+			"Full-Size Open", "Full-Size Sealed", "Earpad Open", "Earpad Sealed",
+			"In-Ear", "Earbud", "Noise-Cancelling", "Wireless"
 		};
 	/** Array of this headphone's decibel values at selected frequencies. */
 	private double[] dBVals;

@@ -131,13 +131,7 @@ public class MeasurementParser {
 		// Check where the corner of the frequency response graph should be.
 		Color color = new Color(image.getRGB(STRETCH_CHECK.x, STRETCH_CHECK.y));
 		// If it's white, the image is stretched.
-		if (color.equals(Color.WHITE))
-			return true;
-		// If it's black, the image is not stretched.
-		if (color.equals(Color.BLACK))
-			return false;
-		// If it's neither, the document isn't valid.
-		throw new InvalidDocumentException();
+		return color.equals(Color.WHITE);
 	}
 	
 	

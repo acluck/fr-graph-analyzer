@@ -10,6 +10,8 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.encryption.InvalidPasswordException;
 import org.apache.pdfbox.rendering.PDFRenderer;
 
+import main.HeadphoneAnalyzer;
+
 /**
  * UI for the Headphone Analyzer program.
  * 
@@ -24,19 +26,18 @@ public class UI {
 	 * @throws InvalidPasswordException 
 	 */
 	public static void main(String[] args) throws InvalidPasswordException, IOException {
-		File file = new File("C:\\Users\\Adam\\Downloads\\AKGK7XX.pdf");
+
+		HeadphoneAnalyzer analyzer = new HeadphoneAnalyzer();
+		analyzer.getHeadphoneMeasurements();
+
+		/**
+		File file = new File("./Headphones/Full-Size Open/AKG Quincy Jones Q701/AKG Quincy Jones Q701.pdf");
 		PDDocument document = PDDocument.load(file);
 		PDFRenderer renderer = new PDFRenderer(document);
-		BufferedImage image = renderer.renderImageWithDPI(0, 600);
-		ImageIO.write(image, "PNG", new File("C:\\Users\\Adam\\Downloads\\600s.png"));
+		BufferedImage image = renderer.renderImageWithDPI(0, 350);
+		ImageIO.write(image, "PNG", new File("C:\\Users\\Adam\\Downloads\\mystery.png"));
 		document.close();
-		
-		file = new File("C:\\Users\\Adam\\Downloads\\StatusSMOB1.pdf");
-		document = PDDocument.load(file);
-		renderer = new PDFRenderer(document);
-		image = renderer.renderImageWithDPI(0, 600);
-		ImageIO.write(image, "PNG", new File("C:\\Users\\Adam\\Downloads\\600.png"));
-		document.close();
+		*/
 	}
 	
 }

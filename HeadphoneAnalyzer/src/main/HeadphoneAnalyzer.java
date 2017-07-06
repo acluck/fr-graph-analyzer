@@ -2,11 +2,25 @@ package main;
 
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLConnection;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
 import org.apache.pdfbox.pdmodel.encryption.InvalidPasswordException;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.nodes.Node;
+import org.jsoup.select.Elements;
 
 import data.Headphone;
 import parse.InvalidDocumentException;
@@ -24,7 +38,7 @@ import util.HeadphoneList;
 public class HeadphoneAnalyzer {
 
 	/** URL of Innerfidelity measurement PDFs. */
-	private static String measurementsLocation = "https://www.innerfidelity.com/headphone-measurements";
+	private static String measurementsURL = "https://www.innerfidelity.com/headphone-measurements";
 	/** Array containing the HeadphoneLists for each type of headphone */
 	private HeadphoneList[] headphones;
 	
@@ -59,7 +73,6 @@ public class HeadphoneAnalyzer {
 	private void loadCurrentHeadphones() {
 		// TODO Check Headphones folder for .txt files containing previously processed headphones.
 		// 		Add all headphones to the list.
-		
 	}
 	
 	/**
@@ -68,20 +81,45 @@ public class HeadphoneAnalyzer {
 	private void loadNewHeadphones() {
 		
 		try {
-			URL measurementsURL = new URL(measurementsLocation);
-		} catch (MalformedURLException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-		
-		// TODO Use PDFParser to set information for new headphones
-		String path = "C:\\Users\\Adam\\Downloads\\XiaomiPiston2.pdf";
-		Headphone headphone = new Headphone("Xiaomi Piston 2", "In-Ear");
-		try {
-			MeasurementParser.parseMeasurements(path, headphone);
-		} catch (InvalidPasswordException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			Document doc = Jsoup.connect(measurementsURL).get();
+			for (int i = 4; i < headphones.length; i++) {
+				String type = headphones[i].getType();
+				String typeSearch = type;
+				if (typeSearch.equals("Earbud"))
+					typeSearch = "Ear-bud";
+				else if (typeSearch.equals("In-Ear"))
+					typeSearch = "In-ear";
+				else if (typeSearch.equals("Wireless"))
+					typeSearch = "Wireless Headphones";
+				Element section = doc.getElementsContainingOwnText(typeSearch).parents().first();
+				Elements elements = section.select("a");
+				for (Element element : elements) {
+					String name = element.text();
+					name = name.replaceAll("w/", "with");
+					name = name.replaceAll("[\\/:*?\"<>|]", "");
+					String link = element.absUrl("href");
+					link = link.replaceFirst("http", "https");
+					link = link.replaceAll(".pdf.pdf", ".pdf");
+					String directoryPath = "./Headphones/" + type + "/" + name;
+					File directory = new File(directoryPath);
+					if (!directory.isDirectory() && !directory.mkdirs()) {
+						throw new IOException("Failed to make headphone directory.");
+					}
+					String filePath = directoryPath + "/" + name + ".pdf";
+		            URL docLink = new URL(link);
+		            URLConnection connection = docLink.openConnection();
+		            connection.setRequestProperty("User-Agent", "Mozilla/5.0"); 
+		            ReadableByteChannel rbc = Channels.newChannel(connection.getInputStream());
+		            FileOutputStream fos = new FileOutputStream(filePath);
+			        fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
+		            rbc.close();
+		            fos.close();
+		            
+		            Headphone headphone = new Headphone(name, type);
+		            MeasurementParser.parseMeasurements(filePath, headphone);
+		            headphones[i].add(headphone);
+				}
+			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -90,6 +128,8 @@ public class HeadphoneAnalyzer {
 			e.printStackTrace();
 		}
 		
+		
+		// TODO Use MeasurementParser to set information for new headphones
 	}
 
 	/**
@@ -100,8 +140,8 @@ public class HeadphoneAnalyzer {
 			String type = list.getType();
 			for (Headphone headphone : list.getAll()) {
 				String name = headphone.getName();
-				String path = "./Headphones/" + type + "/" + name + "/" + name + ".txt";
-				File measurementFile = new File(path);
+				Path path = Paths.get("./Headphones/" + type + "/" + name + "/" + name + ".txt");
+				File measurementFile = path.toFile();
 				if (!measurementFile.exists()) {
 					saveHeadphone(headphone, path);
 				}
@@ -114,11 +154,11 @@ public class HeadphoneAnalyzer {
 	 * @param headphone Headphone with measurements to save.
 	 * @param path Path of the file to save the information in.
 	 */
-	private void saveHeadphone(Headphone headphone, String path) {
+	private void saveHeadphone(Headphone headphone, Path path) {
 		BufferedWriter bw = null;
 		FileWriter fw = null;
 		try {
-			fw = new FileWriter(path);
+			fw = new FileWriter(path.toString());
 			bw = new BufferedWriter(fw);
 			bw.write(headphone.getName() + "\n");
 			double[] dBVals = headphone.getDBVals();
