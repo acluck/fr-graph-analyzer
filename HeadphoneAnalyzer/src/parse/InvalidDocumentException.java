@@ -22,7 +22,7 @@ public class InvalidDocumentException extends Exception {
 	 * Calls the parameterized constructor with the default message for InvalidDocumentException.
 	 */
 	public InvalidDocumentException() {
-		super("PDF file could not be parsed.");
+		super("File could not be parsed.");
 	}
 	
 }

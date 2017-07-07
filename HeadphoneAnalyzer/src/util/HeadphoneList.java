@@ -46,7 +46,7 @@ public class HeadphoneList {
 		// Go backwards through the list until the proper index to add at is found.
 		int index = size;
 		while (index > 0 && list[index - 1] != null
-				&& headphone.compareTo(list[index - 1]) <= 0) {
+				&& headphone.compareTo(list[index - 1]) < 0) {
 			index--;
 		}
 		// Shift the list.

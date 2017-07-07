@@ -130,7 +130,7 @@ public class Headphone implements Comparable<Headphone> {
 	 */
 	@Override
 	public int compareTo(Headphone other) {
-		return name.compareTo(other.name) == 0 ? name.compareTo(other.name) : type.compareTo(other.type);
+		return name.compareTo(other.name) != 0 ? name.compareTo(other.name) : type.compareTo(other.type);
 	}
 	
 }
