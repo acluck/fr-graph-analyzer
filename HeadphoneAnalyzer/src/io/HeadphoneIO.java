@@ -1,4 +1,4 @@
-package main;
+package io;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -12,6 +12,8 @@ import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 import org.jsoup.Jsoup;
@@ -32,43 +34,31 @@ import util.HeadphoneList;
  * 
  * @author Adam Luck
  */
-public class HeadphoneAnalyzer {
+public class HeadphoneIO {
 
 	/** URL of Innerfidelity measurement PDFs. */
 	private static String measurementsURL = "https://www.innerfidelity.com/headphone-measurements";
-	/** Array containing the HeadphoneLists for each type of headphone */
-	private HeadphoneList[] headphones;
-	
-	/**
-	 * Constructs an array of empty HeadphoneLists.
-	 */
-	public HeadphoneAnalyzer() {
-		String[] types = Headphone.HEADPHONE_TYPES;
-		headphones = new HeadphoneList[types.length];
-		for (int i = 0; i < types.length; i++) {
-			headphones[i] = new HeadphoneList(types[i]);
-		}
-	}
+	/** List of names of the different types of headphones */
+	private static final List<String> types = Headphone.HEADPHONE_TYPES;
+	/** List containing the HeadphoneLists for each type of headphone */
+	private static List<HeadphoneList> headphones;
 	
 	/**
 	 * Gets the measurement PDF and stores all of the headphone measurements.
 	 */
-	public void getHeadphoneMeasurements() {
-		
-		System.out.println("Loading current headphones...");
+	public static void loadHeadphoneMeasurements() {
+		headphones = new ArrayList<HeadphoneList>();
+		for (int i = 0; i < types.size(); i++) {
+			headphones.add(new HeadphoneList(types.get(i)));
+		}
 		loadCurrentHeadphones();
-		System.out.println("Getting new headphones...");
-		getNewHeadphones();
-		
-		// TODO Use Analyzer to analyze user input and give headphone recommendations.
-		System.out.println("Saving new headphones...");
-		saveNewHeadphones();
+		getNewHeadphones();		
 	}
 
 	/**
 	 * Loads the headphone information for all measurements that have already been parsed.
 	 */
-	private void loadCurrentHeadphones() {
+	private static void loadCurrentHeadphones() {
 		try {
 			File root = new File("./Headphones");
 			// Add headphones to each list from each corresponding directory.
@@ -109,7 +99,7 @@ public class HeadphoneAnalyzer {
 	 * @param measurementFile File to get information from.
 	 * @return Headphone created from the measurement file.
 	 */
-	private Headphone loadHeadphone(File measurementFile) {
+	private static Headphone loadHeadphone(File measurementFile) {
 		Headphone headphone = null;
 		Scanner scanner = null;
 		try {
@@ -139,7 +129,7 @@ public class HeadphoneAnalyzer {
 	/**
 	 * Checks Innerfidelity for any new measurement sheets that have been uploaded.
 	 */
-	private void getNewHeadphones() {
+	private static void getNewHeadphones() {
 		// Connect to the page containing all of the measurement PDFs.
 		Document doc = null;
 		try {
@@ -206,7 +196,7 @@ public class HeadphoneAnalyzer {
 	 * @param filePath Path to save the file to.
 	 * @throws IOException If the program is unable to download or save the file.
 	 */
-	private void downloadFile(String downloadLink, String filePath) throws IOException {
+	private static void downloadFile(String downloadLink, String filePath) throws IOException {
         URL docLink = new URL(downloadLink);
         URLConnection connection = docLink.openConnection();
         connection.setRequestProperty("User-Agent", "Mozilla/5.0"); 
@@ -216,11 +206,11 @@ public class HeadphoneAnalyzer {
         rbc.close();
         fos.close();
 	}
-
+	
 	/**
 	 * Saves all headphone measurements that don't already exist.
 	 */
-	private void saveNewHeadphones() {
+	public static void saveHeadphoneMeasurements() {
 		for (HeadphoneList list : headphones) {
 			String type = list.getType();
 			for (Headphone headphone : list.getAll()) {
@@ -239,7 +229,7 @@ public class HeadphoneAnalyzer {
 	 * @param headphone Headphone with measurements to save.
 	 * @param filePath Path of the file to save the information in.
 	 */
-	private void saveHeadphone(Headphone headphone, Path filePath) {
+	private static void saveHeadphone(Headphone headphone, Path filePath) {
 		try {
 			FileWriter fw = new FileWriter(filePath.toString());
 			BufferedWriter bw = new BufferedWriter(fw);
@@ -256,6 +246,19 @@ public class HeadphoneAnalyzer {
 			System.err.println("Error with headphone: " + headphone.getName());
 			System.err.println(e.getMessage());
 		}
+	}
+	
+	/**
+	 * Returns the HeadphoneList with type matching the given type.
+	 * @param type Type of HeadphoneList to get.
+	 * @return the HeadphoneList with type matching the given type.
+	 */
+	public static HeadphoneList getHeadphoneList(String type) {
+		for (HeadphoneList list : headphones) {
+			if (type.equals(list.getType()))
+				return list;
+		}
+		return null;
 	}
 
 }

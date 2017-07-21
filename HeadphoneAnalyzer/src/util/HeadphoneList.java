@@ -103,4 +103,12 @@ public class HeadphoneList {
 	public Headphone[] getAll() {
 		return Arrays.copyOf(list, size);
 	}
+	
+	/**
+	 * Returns the number of headphones in the list.
+	 * @return the number of headphones in the list.
+	 */
+	public int size() {
+		return size;
+	}
 }

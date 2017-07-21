@@ -1,5 +1,8 @@
 package data;
 
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * Object containing information about a headphone.
  * Includes name, type, associated image, and an
@@ -14,10 +17,10 @@ public class Headphone implements Comparable<Headphone> {
 	/** Type of headphone. */
 	private String type;
 	/** Array of types of headphones. */
-	public static final String[] HEADPHONE_TYPES = new String[] {
+	public static final List<String> HEADPHONE_TYPES = Arrays.asList(
 			"Full-Size Open", "Full-Size Sealed", "Earpad Open", "Earpad Sealed",
 			"In-Ear", "Earbud", "Noise-Cancelling", "Wireless"
-		};
+		);
 	/** Array of this headphone's decibel values at selected frequencies. */
 	private double[] dBVals;
 	/** Array of frequencies measured by the program; corresponds to the frequencies array. **/
