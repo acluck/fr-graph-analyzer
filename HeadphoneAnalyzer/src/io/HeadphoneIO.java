@@ -21,6 +21,10 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.Statement;
+
 import data.Headphone;
 import parse.InvalidDocumentException;
 import parse.MeasurementParser;
@@ -45,6 +49,7 @@ public class HeadphoneIO {
 	
 	/**
 	 * Gets the measurement PDF and stores all of the headphone measurements.
+	 * Also stores the headphone measurements in the SQL database.
 	 */
 	public static void loadHeadphoneMeasurements() {
 		headphones = new ArrayList<HeadphoneList>();
@@ -52,11 +57,56 @@ public class HeadphoneIO {
 			headphones.add(new HeadphoneList(types.get(i)));
 		}
 		loadCurrentHeadphones();
-		getNewHeadphones();		
+		getNewHeadphones();
+		Connection con = null;
+		Statement stmt = null;
+	    String sql;
+	    ResultSet rs = null;
+		try {
+			// Make the connection.
+			con = HPDBConnection.getConnection();
+			stmt = con.createStatement();
+		    // Assert that all of the headphones are in the database, and if they aren't, add them.
+			for (HeadphoneList hpList : headphones) {
+				for (Headphone hp : hpList.getAll()) {
+					System.out.println(hp.getName());
+					sql = "SELECT * FROM headphones WHERE name = '" + hp.getName() + "';";
+					rs = stmt.executeQuery(sql);
+					if (!rs.first()) {
+						double[] dbVals = hp.getDBVals();
+						StringBuilder sb = new StringBuilder();
+						for (double val : dbVals) {
+							sb.append(String.format("%.2f", val) + " ");
+						}
+						sql = "INSERT INTO headphones (name, type, url, dbVals) " +
+							"VALUES ('" + hp.getName() + "', '" + hp.getType() + "', '" +
+								hp.getURL() + "', '" + sb.toString().trim() + "');";
+						stmt.execute(sql);
+					}
+				}
+			}
+		    rs.close();
+		    stmt.close();
+		    con.close();
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		} finally {
+			try {
+				if (stmt != null)
+					stmt.close();
+			    if (con != null)
+			    	con.close();
+				if (rs != null)
+					rs.close();
+			} catch (Exception ex) {
+				ex.printStackTrace();
+			}
+		}
 	}
 
 	/**
 	 * Loads the headphone information for all measurements that have already been parsed.
+	 * Also ensures the Headphone SQL Database contains all of the 
 	 */
 	private static void loadCurrentHeadphones() {
 		try {
@@ -106,7 +156,8 @@ public class HeadphoneIO {
 			scanner = new Scanner(measurementFile);
 			String name = scanner.nextLine();
 			String type = scanner.nextLine();
-			headphone = new Headphone(name, type);
+			String link = scanner.nextLine();
+			headphone = new Headphone(name, type, link);
 			int totalVals = Headphone.MEASURED_FREQUENCIES.length;
 			double[] dBVals = new double[totalVals];
 			for (int i = 0; i < totalVals; i++) {
@@ -157,7 +208,7 @@ public class HeadphoneIO {
 			for (Element element : elements) {
 				String name = element.text();
 				name = name.replaceAll("w/", "with");
-				name = name.replaceAll("[\\/:*?\"<>|]", " ");
+				name = name.replaceAll("[\\/:*?'\"<>|]", " ");
 				name = name.trim().replaceAll("\\s{2,}", " ");
 				// If the headphone is already in the list, skip and continue to the next one.
 				if (headphoneList.get(name) != null)
@@ -178,7 +229,7 @@ public class HeadphoneIO {
 						downloadFile(downloadLink, filePath);
 					}
 		            // Make a new Headphone object, parse its measurements, and add it to the list.
-		            Headphone headphone = new Headphone(name, type);
+		            Headphone headphone = new Headphone(name, type, downloadLink);
 		            MeasurementParser.parseMeasurements(filePath, headphone);
 		            headphoneList.add(headphone);
 				} catch (IOException | InvalidDocumentException e) {
@@ -235,6 +286,7 @@ public class HeadphoneIO {
 			BufferedWriter bw = new BufferedWriter(fw);
 			bw.write(headphone.getName() + "\n");
 			bw.write(headphone.getType() + "\n");
+			bw.write(headphone.getURL() + "\n");
 			double[] dBVals = headphone.getDBVals();
 			for (int i = 0; i < dBVals.length; i++) {
 				bw.write(Double.toString(dBVals[i]) + " ");

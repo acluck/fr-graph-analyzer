@@ -16,13 +16,15 @@ public class Headphone implements Comparable<Headphone> {
 	private String name;
 	/** Type of headphone. */
 	private String type;
+	/** URL of headphone measurements. */
+	private String url;
+	/** Array of this headphone's decibel values at selected frequencies. */
+	private double[] dBVals;
 	/** Array of types of headphones. */
 	public static final List<String> HEADPHONE_TYPES = Arrays.asList(
 			"Full-Size Open", "Full-Size Sealed", "Earpad Open", "Earpad Sealed",
 			"In-Ear", "Earbud", "Noise-Cancelling", "Wireless"
 		);
-	/** Array of this headphone's decibel values at selected frequencies. */
-	private double[] dBVals;
 	/** Array of frequencies measured by the program; corresponds to the frequencies array. **/
 	public static final int[] MEASURED_FREQUENCIES = new int[] {
 			20, 30, 40, 50, 60, 70, 80, 90, 100,
@@ -34,21 +36,25 @@ public class Headphone implements Comparable<Headphone> {
 	 * Constructor for new headphones.
 	 * @param name Name of the headphone.
 	 * @param type Type of headphone.
+	 * @param url URL of headphone measurements.
 	 */
-	public Headphone(String name, String type) {
+	public Headphone(String name, String type, String link) {
 		this.name = name;
 		this.type = type;
+		this.url = link;
 	}
 	
 	/**
 	 * Constructor for headphones that have been previously processed.
 	 * @param name Name of the headphone.
 	 * @param type Type of headphone.
+	 * @param url URL of headphone measurements.
 	 * @param dBVals Array of measured decibel values.
 	 */
-	public Headphone(String name, String type, double[] dBVals) {
+	public Headphone(String name, String type, String link, double[] dBVals) {
 		this.name = name;
 		this.type = type;
+		this.url = link;
 		this.dBVals = dBVals;
 	}
 	
@@ -76,6 +82,14 @@ public class Headphone implements Comparable<Headphone> {
 		return type;
 	}
 
+	/**
+	 * Returns the URL of this headphone's measurements.
+	 * @return the URL of this headphone's measurements.
+	 */
+	public String getURL() {
+		return url;
+	}
+	
 	/**
 	 * Returns this headphone's decibel values.
 	 * @return this headphone's decibel values.

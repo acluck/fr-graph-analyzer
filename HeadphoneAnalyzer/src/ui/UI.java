@@ -106,7 +106,7 @@ public class UI {
 			input.nextLine();
 		}
 		// Analyze the input and print out the closest matches.
-		Headphone[] closestMatches = Analyzer.analyze(base, freqDiff, returnAmt, compareList);
+		Headphone[] closestMatches = Analyzer.analyze(base, freqDiff, returnAmt, compareList.getAll());
 		System.out.println("Closest matches:");
 		for (Headphone headphone : closestMatches) {
 			System.out.println(headphone.getName());

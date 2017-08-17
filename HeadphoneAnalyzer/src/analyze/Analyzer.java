@@ -3,7 +3,6 @@ package analyze;
 import java.util.Arrays;
 
 import data.Headphone;
-import util.HeadphoneList;
 
 /**
  * Analyzes headphone measurement preferences and returns recommended headphones.
@@ -20,12 +19,12 @@ public class Analyzer {
 	 * @param base Base headphone to compare to.
 	 * @param freqDiff Array of dB differences for each of the measured frequencies.
 	 * @param returnAmt Number of headphones to return.
-	 * @param hpList List of headphones to compare to.
+	 * @param compareList Array of headphones to compare to.
 	 * @return an array of Headphones that most closely match the given parameters.
 	 */
-	public static Headphone[] analyze(Headphone base, double[] freqDiff, int returnAmt, HeadphoneList hpList) {
+	public static Headphone[] analyze(Headphone base, double[] freqDiff, int returnAmt, Headphone[] compareList) {
 		// Error checking.
-		if (hpList.size() < returnAmt) {
+		if (compareList.length < returnAmt) {
 			throw new IndexOutOfBoundsException("Number of headphones to return must be "
 					+ "less than the number of headphones in the list.");
 		}
@@ -33,12 +32,19 @@ public class Analyzer {
 			throw new IndexOutOfBoundsException("Length of the array of frequency differences must"
 					+ " match the total number of measured frequencies.");
 		}
-		// Set the array of optimal frequency values.
+		// If a base headphone is given, set the array of optimal frequency values.
 		int numMF = MEASURED_FREQUENCIES.length;
-		double[] hpF = base.getDBVals();
-		double[] optimalF = new double[numMF];
-		for (int i = 0; i < numMF; i++) {
-			optimalF[i] = hpF[i] + freqDiff[i];
+		double[] hpF;
+		double[] optimalF;
+		if (base != null) {
+			hpF = base.getDBVals();
+			optimalF = new double[numMF];
+			for (int i = 0; i < numMF; i++) {
+				optimalF[i] = hpF[i] + freqDiff[i];
+			}
+		}
+		else {
+			optimalF = freqDiff;
 		}
 		double optimalAve = calculateAverage(optimalF);
 		// Make an array to hold the total squared difference of dB values,
@@ -48,7 +54,6 @@ public class Analyzer {
 		Headphone[] closestHeadphones = new Headphone[returnAmt];
 		// Calculate the squared difference of each headphone in the hpList,
 		// updating the lSDArr and closestHeadphones array as necessary.
-		Headphone[] compareList = hpList.getAll();
 		for (Headphone headphone : compareList) {
 			if (headphone.equals(base))
 				continue;

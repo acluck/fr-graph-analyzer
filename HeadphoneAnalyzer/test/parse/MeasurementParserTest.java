@@ -24,15 +24,17 @@ public class MeasurementParserTest {
 	 */
 	@Test
 	public void test() throws InvalidPasswordException, IOException, InvalidDocumentException {
-		String path = "C:\\Users\\Adam\\Downloads\\XiaomiPiston2.pdf";
-		Headphone headphone = new Headphone("Xiaomi Piston 2", "In-Ear");
+		String path = "./Headphones/In-Ear/Xiaomi Piston2/Xiaomi Piston2.pdf";
+		Headphone headphone = new Headphone("Xiaomi Piston2", "In-Ear",
+				"https://www.innerfidelity.com/images/XiaomiPiston2.pdf");
 		MeasurementParser.parseMeasurements(path, headphone);
 		double[] dBVals = headphone.getDBVals();
 		
 		BufferedWriter bw = null;
 		FileWriter fw = null;
 		try {
-			fw = new FileWriter("./Headphones/In-Ear/" + headphone.getName() + "/" + headphone.getName() + ".txt");
+			fw = new FileWriter("./Headphones/In-Ear/" + headphone.getName() + "/" +
+					headphone.getName() + ".txt");
 			bw = new BufferedWriter(fw);
 			bw.write(headphone.getName() + "\n");
 			for (int i = 0; i < dBVals.length; i++) {
