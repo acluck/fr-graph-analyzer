@@ -91,9 +91,11 @@ public class MeasurementParser {
 	 */
 	private static double[] parseDBVals(PDDocument document)
 			throws InvalidDocumentException, IOException {
+		
 		// Render the document/image.
 		PDFRenderer renderer = new PDFRenderer(document);
 		BufferedImage image = renderer.renderImageWithDPI(0, 350);
+		
 		// Determine whether the image is stretched or not.
 		boolean stretched = checkStretch(image);
 		// Set variables based on stretch.
@@ -110,29 +112,57 @@ public class MeasurementParser {
 			bot = NS_FR_BOT;
 			xVals = NS_FR_X_VALS;
 		}
+		
 		// Calculate decibel values for each frequency in xVals.
 		double[] dBVals = new double[xVals.length];
 		int botTopRange = bot - top;
 		for (int i = 0; i < xVals.length; i++) {
-			// Get most red pixel at the given x-coordinate between top and bottom
-			int xVal = xVals[i];
-			int finalYVal = bot;
+			boolean foundRed = false;
+			boolean foundBlue = false;
+			int finalRedY = bot;
+			int finalBlueY = bot;
+			// Get most red/blue pixel at the given x-coordinate between top and bottom
 			int mostRed = 0;
+			int mostBlue = 0;
 			// Start at the top of the graph and work down.
 			for (int yVal = top; yVal < bot; yVal++) {
-				Color color = new Color(image.getRGB(xVal, yVal));
+				Color color = new Color(image.getRGB(xVals[i], yVal));
 				int red = color.getRed();
+				int blue = color.getBlue();
 				// Don't count grayscale pixels.
-				if (color.getBlue() == red && color.getGreen() == red) {
+				if (red == blue && red == color.getGreen()) {
 					continue;
 				}
-				else if (color.getRed() > mostRed) {
-					mostRed = color.getRed();
-					finalYVal = yVal;
+				else if (red > mostRed && red > blue) {
+					foundRed = true;
+					mostRed = red;
+					finalRedY = yVal;
 					if (mostRed == Color.RED.getRed())
 						break;
 				}
+				else if (blue > mostBlue && blue > red) {
+					foundBlue = true;
+					mostBlue = blue;
+					finalBlueY = yVal;
+					if (mostBlue == Color.BLUE.getBlue())
+						break;
+				}
 			}
+			
+			// Calculate the final Y value based on the red and blue y values found.
+			int finalYVal = 0;
+			if (foundRed && foundBlue) {
+				finalYVal = (finalRedY + finalBlueY) / 2;
+			}
+			else if (foundRed) {
+				finalYVal = finalRedY;
+			}
+			else if (foundBlue) {
+				finalYVal = finalBlueY;
+			} else {
+				throw new InvalidDocumentException("Couldn't parse measurements.");
+			}
+			
 			// Do some math to calculate the decibel value using the graph proportions.
 			int distFromBot = bot - finalYVal;
 			double propDistFromBot = (double) distFromBot / botTopRange;
