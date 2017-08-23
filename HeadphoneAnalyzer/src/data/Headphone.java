@@ -33,39 +33,19 @@ public class Headphone implements Comparable<Headphone> {
 		};
 	
 	/**
-	 * Constructor for new headphones.
-	 * @param name Name of the headphone.
-	 * @param type Type of headphone.
-	 * @param url URL of headphone measurements.
-	 */
-	public Headphone(String name, String type, String link) {
-		this.name = name;
-		this.type = type;
-		this.url = link;
-	}
-	
-	/**
-	 * Constructor for headphones that have been previously processed.
+	 * Constructor for headphones.
 	 * @param name Name of the headphone.
 	 * @param type Type of headphone.
 	 * @param url URL of headphone measurements.
 	 * @param dBVals Array of measured decibel values.
 	 */
-	public Headphone(String name, String type, String link, double[] dBVals) {
+	public Headphone(String name, String type, String url, double[] dBVals) {
 		this.name = name;
 		this.type = type;
-		this.url = link;
+		this.url = url;
 		this.dBVals = dBVals;
 	}
 	
-	/**
-	 * Frequencies are found and set in MeasurementParser.
-	 * @param dBVals Array of measured decibel values.
-	 */
-	public void setDBVals(double[] dBVals) {
-		this.dBVals = dBVals;
-	}
-
 	/**
 	 * Returns the name of this headphone.
 	 * @return the name of this headphone.

@@ -7,6 +7,7 @@ import java.io.IOException;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.encryption.InvalidPasswordException;
 import org.apache.pdfbox.rendering.PDFRenderer;
+import org.apache.pdfbox.text.PDFTextStripper;
 
 import data.Headphone;
 
@@ -46,31 +47,53 @@ public class MeasurementParser {
 	
 	/**
 	 * Renders a PDF file as an image, which is then passed to and parsed by
-	 * parseImage to update the given headphone's information.
+	 * parseImage to get an array of decibel values.
+	 * Creates and returns a new Headphone object.
 	 * @param path Path to the PDF to parse.
-	 * @param headphone Headphone represented by the PDF.
+	 * @param type Type of headphone to be created.
+	 * @param url URL of the headphone's PDF.
 	 * @throws InvalidPasswordException if the program doesn't have permissions to load the file.
 	 * @throws IOException if the program has issues loading the file.
 	 * @throws InvalidDocumentException if the PDF being parsed is invalid.
 	 */
-	public static void parseMeasurements(String path, Headphone headphone)
+	public static Headphone parseMeasurements(String path, String type, String url)
 			throws InvalidPasswordException, IOException, InvalidDocumentException {
 		File file = new File(path);
 		PDDocument document = PDDocument.load(file);
-		PDFRenderer renderer = new PDFRenderer(document);
-		BufferedImage image = renderer.renderImageWithDPI(0, 350);
-		parseImage(image, headphone);
+		String name = parseName(document);
+		double[] dBVals = parseDBVals(document);
 		document.close();
+		return new Headphone(name, type, url, dBVals);
 	}
 
 	/**
-	 * Parses an image and updates the given headphone's information.
-	 * @param image Image to parse.
-	 * @param headphone Headphone to set information for.
-	 * @throws InvalidDocumentException if the PDF being parsed is invalid.
+	 * Parses the name from a headphone measurement PDF.
+	 * @param document PDDocument to parse.
+	 * @return the name of the headphone parsed from the document.
+	 * @throws IOException if the program has issues loading the file.
 	 */
-	private static void parseImage(BufferedImage image, Headphone headphone)
-			throws InvalidDocumentException {
+	private static String parseName(PDDocument document) throws IOException {
+		PDFTextStripper stripper = new PDFTextStripper();
+		String text = stripper.getText(document);
+		String name = text.substring(text.indexOf("reserved.") + 11, text.indexOf("%") - 2);
+		name = name.replaceAll("w/", "with");
+		name = name.replaceAll("[\\/:*?'\"<>|]", " ");
+		name = name.trim().replaceAll("\\s{2,}", " ");
+		return name;
+	}
+
+	/**
+	 * Parses the decibel values from a headphone measurement PDF.
+	 * @param document PDDocument to parse.
+	 * @throws InvalidDocumentException if the PDF being parsed is invalid.
+	 * @throws IOException if the program has issues loading the file.
+	 * @return the array of decibel values parsed from the document.
+	 */
+	private static double[] parseDBVals(PDDocument document)
+			throws InvalidDocumentException, IOException {
+		// Render the document/image.
+		PDFRenderer renderer = new PDFRenderer(document);
+		BufferedImage image = renderer.renderImageWithDPI(0, 350);
 		// Determine whether the image is stretched or not.
 		boolean stretched = checkStretch(image);
 		// Set variables based on stretch.
@@ -117,7 +140,7 @@ public class MeasurementParser {
 			double totalDB = dBFromBot + DB_MIN;
 			dBVals[i] = totalDB;
 		}
-		headphone.setDBVals(dBVals);
+		return dBVals;
 	}
 
 	/**

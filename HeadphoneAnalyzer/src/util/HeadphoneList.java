@@ -68,7 +68,7 @@ public class HeadphoneList {
 	 * @param name Name of the headphone to check for.
 	 * @return the headphone with the given name if there is one in the list.
 	 */
-	public Headphone get(String name) {
+	public Headphone getByName(String name) {
 		// If the list is empty.
 		if (size == 0) {
 			return null;
@@ -90,6 +90,23 @@ public class HeadphoneList {
 			}
 			else {
 				lowIdx = midIdx + 1;
+			}
+		}
+		// Return null if the headphone isn't in the list.
+		return null;
+	}
+	
+	/**
+	 * Returns the headphone with the given url if there is one in the list,
+	 * and returns null otherwise.
+	 * @param link PDF URL of the headphone to check for.
+	 * @return the headphone with the given url if there is one in the list.
+	 */
+	public Headphone getByURL(String url) {
+		// Look through the links in linear time (since they aren't ordered).
+		for (int i = 0; i < size; i++) {
+			if (list[i].getURL().equals(url)) {
+				return list[i];
 			}
 		}
 		// Return null if the headphone isn't in the list.

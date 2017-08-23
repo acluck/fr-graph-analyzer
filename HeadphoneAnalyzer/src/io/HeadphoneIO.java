@@ -49,7 +49,6 @@ public class HeadphoneIO {
 	
 	/**
 	 * Gets the measurement PDF and stores all of the headphone measurements.
-	 * Also stores the headphone measurements in the SQL database.
 	 */
 	public static void loadHeadphoneMeasurements() {
 		headphones = new ArrayList<HeadphoneList>();
@@ -58,9 +57,15 @@ public class HeadphoneIO {
 		}
 		loadCurrentHeadphones();
 		getNewHeadphones();
+		updateDatabase();
+	}
+
+	/**
+	 * Updates the SQL database with any new headphones.
+	 */
+	private static void updateDatabase() {
 		Connection con = null;
 		Statement stmt = null;
-	    String sql;
 	    ResultSet rs = null;
 		try {
 			// Make the connection.
@@ -69,8 +74,7 @@ public class HeadphoneIO {
 		    // Assert that all of the headphones are in the database, and if they aren't, add them.
 			for (HeadphoneList hpList : headphones) {
 				for (Headphone hp : hpList.getAll()) {
-					System.out.println(hp.getName());
-					sql = "SELECT * FROM headphones WHERE name = '" + hp.getName() + "';";
+					String sql = "SELECT * FROM headphones WHERE name = '" + hp.getName() + "';";
 					rs = stmt.executeQuery(sql);
 					if (!rs.first()) {
 						double[] dbVals = hp.getDBVals();
@@ -101,7 +105,7 @@ public class HeadphoneIO {
 			} catch (Exception ex) {
 				ex.printStackTrace();
 			}
-		}
+		}		
 	}
 
 	/**
@@ -111,8 +115,14 @@ public class HeadphoneIO {
 	private static void loadCurrentHeadphones() {
 		try {
 			File root = new File("./Headphones");
+			if (!root.isDirectory() && !root.mkdirs()) {
+				throw new IOException("Failed to make root directory.");
+			}
 			// Add headphones to each list from each corresponding directory.
 			for (File typeDir : root.listFiles()) {
+				if (!typeDir.isDirectory() && !typeDir.mkdirs()) {
+					throw new IOException("Failed to make " + typeDir.getName() + " directory.");
+				}
 				// Get the HeadphoneList that matches the name of the directory.
 				String type = typeDir.getName();
 				HeadphoneList headphoneList = null;
@@ -157,7 +167,6 @@ public class HeadphoneIO {
 			String name = scanner.nextLine();
 			String type = scanner.nextLine();
 			String link = scanner.nextLine();
-			headphone = new Headphone(name, type, link);
 			int totalVals = Headphone.MEASURED_FREQUENCIES.length;
 			double[] dBVals = new double[totalVals];
 			for (int i = 0; i < totalVals; i++) {
@@ -166,7 +175,7 @@ public class HeadphoneIO {
 				else
 					throw new InvalidDocumentException();
 			}
-			headphone.setDBVals(dBVals);
+			headphone = new Headphone(name, type, link, dBVals);
 		} catch (FileNotFoundException | InvalidDocumentException e) {
 			System.err.println("Error loading headphone: " + measurementFile.getName());
 			e.printStackTrace();
@@ -206,34 +215,32 @@ public class HeadphoneIO {
 			Elements elements = section.select("a");
 			// Make a new directory and Headphone object for each new measurement PDF.
 			for (Element element : elements) {
-				String name = element.text();
-				name = name.replaceAll("w/", "with");
-				name = name.replaceAll("[\\/:*?'\"<>|]", " ");
-				name = name.trim().replaceAll("\\s{2,}", " ");
-				// If the headphone is already in the list, skip and continue to the next one.
-				if (headphoneList.get(name) != null)
-					continue;
+				// Name to be used for storage purposes.
+				String directoryName = "";
 				try {
 					// Get the link and ensure it is formatted correctly.
-					String downloadLink = element.absUrl("href");
-					downloadLink = downloadLink.replaceFirst("http", "https");
-					downloadLink = downloadLink.substring(0, downloadLink.lastIndexOf(".")) + ".pdf";
+					String url = element.absUrl("href");
+					url = url.replaceFirst("http", "https");
+					url = url.substring(0, url.indexOf(".pdf")) + ".pdf";
+					// If the headphone is already in the list, skip and continue to the next one.
+					if (headphoneList.getByURL(url) != null)
+						continue;
 					// Make a directory (if necessary) to store associated documents in.
-					String directoryPath = "./Headphones/" + type + "/" + name;
+					directoryName = url.substring(url.lastIndexOf("/") + 1, url.length() - 4);
+					String directoryPath = "./Headphones/" + type + "/" + directoryName;
 					File directory = new File(directoryPath);
 					if (!directory.isDirectory() && !directory.mkdirs())
 						throw new IOException("Failed to make headphone directory.");
 					// Connect to the URL, download the PDF, and save it in the directory.
-					String filePath = directoryPath + "/" + name + ".pdf";
+					String filePath = directoryPath + "/" + directoryName + ".pdf";
 					if (!new File(filePath).exists()) {
-						downloadFile(downloadLink, filePath);
+						downloadFile(url, filePath);
 					}
 		            // Make a new Headphone object, parse its measurements, and add it to the list.
-		            Headphone headphone = new Headphone(name, type, downloadLink);
-		            MeasurementParser.parseMeasurements(filePath, headphone);
+		            Headphone headphone = MeasurementParser.parseMeasurements(filePath, type, url);
 		            headphoneList.add(headphone);
 				} catch (IOException | InvalidDocumentException e) {
-					System.err.println("Error getting headphone: " + name);
+					System.err.println("Error getting headphone: " + directoryName);
 					System.err.println(e.getMessage());
 					continue;
 				}
@@ -265,8 +272,9 @@ public class HeadphoneIO {
 		for (HeadphoneList list : headphones) {
 			String type = list.getType();
 			for (Headphone headphone : list.getAll()) {
-				String name = headphone.getName();
-				Path filePath = Paths.get("./Headphones/" + type + "/" + name + "/" + name + ".txt");
+				String url = headphone.getURL();
+				String directoryName = url.substring(url.lastIndexOf("/") + 1, url.length() - 4);
+				Path filePath = Paths.get("./Headphones/" + type + "/" + directoryName + "/" + directoryName + ".txt");
 				File measurementFile = filePath.toFile();
 				if (!measurementFile.exists()) {
 					saveHeadphone(headphone, filePath);
