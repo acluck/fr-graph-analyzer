@@ -17,7 +17,7 @@ public class HPDBConnection {
 		try {  
 			Class.forName("com.mysql.jdbc.Driver");
 			connection = DriverManager.getConnection(  
-			"jdbc:mysql://localhost:3306/db?autoReconnect=true&useSSL=false","root","ridiculon");   
+			"jdbc:mysql://localhost:3306/db?autoReconnect=true&useSSL=false","root","parsnipbagger");   
 		} catch (Exception e) {
 			System.out.println(e);
 		}
