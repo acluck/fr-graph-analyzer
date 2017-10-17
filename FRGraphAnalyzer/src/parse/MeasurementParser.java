@@ -4,6 +4,8 @@ import java.awt.Point;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.text.DecimalFormat;
+
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.encryption.InvalidPasswordException;
 import org.apache.pdfbox.rendering.PDFRenderer;
@@ -163,11 +165,12 @@ public class MeasurementParser {
 				throw new InvalidDocumentException("Couldn't parse measurements.");
 			}
 			
-			// Do some math to calculate the decibel value using the graph proportions.
+			// Do some math to calculate a rounded decibel value using the graph proportions.
 			int distFromBot = bot - finalYVal;
 			double propDistFromBot = (double) distFromBot / botTopRange;
 			double dBFromBot = propDistFromBot * DB_RANGE;
 			double totalDB = dBFromBot + DB_MIN;
+			totalDB = Math.round(totalDB * 100.0) / 100.0;
 			dBVals[i] = totalDB;
 		}
 		return dBVals;

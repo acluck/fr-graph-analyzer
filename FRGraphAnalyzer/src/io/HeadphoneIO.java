@@ -13,6 +13,7 @@ import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
 
@@ -79,14 +80,9 @@ public class HeadphoneIO {
 					String sql = "SELECT * FROM headphones WHERE name = '" + hp.getName() + "';";
 					rs = stmt.executeQuery(sql);
 					if (!rs.first()) {
-						double[] dbVals = hp.getDBVals();
-						StringBuilder sb = new StringBuilder();
-						for (double val : dbVals) {
-							sb.append(String.format("%.2f", val) + " ");
-						}
 						sql = "INSERT INTO headphones (name, type, url, dbVals) " +
 							"VALUES ('" + hp.getName() + "', '" + hp.getType() + "', '" +
-								hp.getURL() + "', '" + sb.toString().trim() + "');";
+								hp.getURL() + "', '" + Arrays.toString(hp.getDBVals()) + "');";
 						stmt.execute(sql);
 					}
 				}
@@ -169,16 +165,14 @@ public class HeadphoneIO {
 			String name = scanner.nextLine();
 			String type = scanner.nextLine();
 			String link = scanner.nextLine();
-			int totalVals = Headphone.MEASURED_FREQUENCIES.length;
-			double[] dBVals = new double[totalVals];
-			for (int i = 0; i < totalVals; i++) {
-				if (scanner.hasNextDouble())
-					dBVals[i] = scanner.nextDouble();
-				else
-					throw new InvalidDocumentException();
-			}
+			String dBValString = scanner.nextLine();
+			String[] split = dBValString.replace("[", "").replace("]", "").split(", ");
+		    double dBVals[] = new double[split.length];
+		    for (int i = 0; i < dBVals.length; i++) {
+		    	dBVals[i] = Double.parseDouble(split[i]);
+		    }
 			headphone = new Headphone(name, type, link, dBVals);
-		} catch (FileNotFoundException | InvalidDocumentException e) {
+		} catch (FileNotFoundException e) {
 			System.err.println("Error loading headphone: " + measurementFile.getName());
 			e.printStackTrace();
 		} finally {
@@ -297,11 +291,7 @@ public class HeadphoneIO {
 			bw.write(headphone.getName() + "\n");
 			bw.write(headphone.getType() + "\n");
 			bw.write(headphone.getURL() + "\n");
-			double[] dBVals = headphone.getDBVals();
-			for (int i = 0; i < dBVals.length; i++) {
-				bw.write(Double.toString(dBVals[i]) + " ");
-			}
-			bw.write("\n");
+			bw.write(Arrays.toString(headphone.getDBVals()) + "\n");
 			bw.close();
 			fw.close();
 		} catch (IOException e) {
