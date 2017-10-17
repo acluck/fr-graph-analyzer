@@ -177,10 +177,8 @@ public class MeasurementParser {
 	 * Returns whether the image is stretched.
 	 * @param image Image to check.
 	 * @return whether the image is stretched.
-	 * @throws InvalidDocumentException if the PDF being parsed is invalid.
 	 */
-	private static boolean checkStretch(BufferedImage image)
-			throws InvalidDocumentException {
+	private static boolean checkStretch(BufferedImage image) {
 		// Check where the corner of the frequency response graph should be.
 		Color color = new Color(image.getRGB(STRETCH_CHECK.x, STRETCH_CHECK.y));
 		// If it's white, the image is stretched.

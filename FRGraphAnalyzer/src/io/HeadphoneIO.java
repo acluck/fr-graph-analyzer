@@ -41,7 +41,9 @@ import util.HeadphoneList;
 public class HeadphoneIO {
 
 	/** URL of Innerfidelity measurement PDFs. */
-	private static String measurementsURL = "https://www.innerfidelity.com/headphone-measurements";
+	private static final String MEASUREMENT_URL = "https://www.innerfidelity.com/headphone-measurements";
+	/** Path to directory where headphone measurement information is stored. */
+	private static final String HP_DIR = "C:\\Users\\Adam\\Web\\Headphones\\";
 	/** List of names of the different types of headphones */
 	private static final List<String> types = Headphone.HEADPHONE_TYPES;
 	/** List containing the HeadphoneLists for each type of headphone */
@@ -114,7 +116,7 @@ public class HeadphoneIO {
 	 */
 	private static void loadCurrentHeadphones() {
 		try {
-			File root = new File("./Headphones");
+			File root = new File(HP_DIR);
 			if (!root.isDirectory() && !root.mkdirs()) {
 				throw new IOException("Failed to make root directory.");
 			}
@@ -193,7 +195,7 @@ public class HeadphoneIO {
 		// Connect to the page containing all of the measurement PDFs.
 		Document doc = null;
 		try {
-			doc = Jsoup.connect(measurementsURL).get();
+			doc = Jsoup.connect(MEASUREMENT_URL).get();
 			if (doc == null)
 				throw new IOException("URL of the measurements page is broken.");
 		} catch (IOException e) {
@@ -227,7 +229,7 @@ public class HeadphoneIO {
 						continue;
 					// Make a directory (if necessary) to store associated documents in.
 					directoryName = url.substring(url.lastIndexOf("/") + 1, url.length() - 4);
-					String directoryPath = "./Headphones/" + type + "/" + directoryName;
+					String directoryPath = HP_DIR + type + "/" + directoryName;
 					File directory = new File(directoryPath);
 					if (!directory.isDirectory() && !directory.mkdirs())
 						throw new IOException("Failed to make headphone directory.");
@@ -274,7 +276,7 @@ public class HeadphoneIO {
 			for (Headphone headphone : list.getAll()) {
 				String url = headphone.getURL();
 				String directoryName = url.substring(url.lastIndexOf("/") + 1, url.length() - 4);
-				Path filePath = Paths.get("./Headphones/" + type + "/" + directoryName + "/" + directoryName + ".txt");
+				Path filePath = Paths.get(HP_DIR + type + "/" + directoryName + "/" + directoryName + ".txt");
 				File measurementFile = filePath.toFile();
 				if (!measurementFile.exists()) {
 					saveHeadphone(headphone, filePath);
