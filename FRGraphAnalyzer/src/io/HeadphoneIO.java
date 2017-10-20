@@ -58,8 +58,11 @@ public class HeadphoneIO {
 		for (int i = 0; i < types.size(); i++) {
 			headphones.add(new HeadphoneList(types.get(i)));
 		}
+		System.out.println("    Loading current headphones...");
 		loadCurrentHeadphones();
+		System.out.println("    Getting new headphones...");
 		getNewHeadphones();
+		System.out.println("    Updating headphone database...");
 		updateDatabase();
 	}
 
